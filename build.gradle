@@ -1,0 +1,128 @@
+buildscript {
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.4.1"
+    }
+
+}
+
+apply from: "gradle/dependencies.gradle"
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+ext {
+    rootProjectDir = "$projectDir"
+    servicesBuildDir = "$projectDir/build/services"
+    distributionBuildDir = "$projectDir/build/distributions"
+    scriptsDir = "$projectDir/utils/src/main/scripts"
+}
+
+println "$rootProjectDir"
+println "$servicesBuildDir"
+println "$distributionBuildDir"
+println "Java Version: ${System.getProperty("java.version")}"
+
+sourceCompatibility = '11'
+
+// Configuration applicable to main and sub projects
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    // set version number
+    def aversion = project.getProperties()["version"]
+
+    if (aversion == "unspecified") aversion = new Date().format("yyyyMMdd-HHmmss") + "-SNAPSHOT"
+    version = aversion
+    project.ext["revisionVersion"] = aversion
+
+    sourceCompatibility = '11'
+
+    group = 'com.sampleprj'
+
+    jar {
+        manifest {
+            attributes 'Manifest-Version': '1.0',
+                    'Specification-Title': 'SamplePrj',
+                    'Specification-Version': version,
+                    'Specification-Vendor': 'SamplePrj',
+                    'Implementation-Title': project.name,
+                    'Implementation-Version': project.revisionVersion,
+                    'Implementation-Vendor': 'SamplePrj'
+        }
+    }
+}
+
+// Configuration applicable to all sub projects
+subprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+
+// Configuration specific to services modules
+configure(subprojects.findAll { it.path.contains(":services:") }) {
+    apply plugin: 'application'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'maven'
+
+    configurations.archives.with {
+        artifacts.remove artifacts.find { it.type == 'tar' }
+        artifacts.remove artifacts.find { it.type == 'jar' }
+    }
+
+    distZip.enabled = true
+    distTar.enabled = false
+
+    distributions {
+        boot {
+            bootDistTar.enabled = false
+            bootDistZip.archiveFileName = "${project.name}-${revisionVersion}" + ".zip"
+
+            // configuration to package wrapper scripts in the service - for future use
+            bootDistZip {
+                into("${project.name}-${revisionVersion}/bin") {
+                    from "${projectDir}/src/main/scripts"
+                    from "${scriptsDir}"
+                    include '**'
+                }
+            }
+
+            configurations {
+                serviceArtifacts
+            }
+
+            artifacts {
+                serviceArtifacts file: file("${rootProjectDir}/services/${project.name}/build/distributions/${project.name}-${revisionVersion}" + ".zip"),
+                        name: "${project.name}",
+                        type: 'zip'
+            }
+
+            uploadServiceArtifacts() {
+                repositories.mavenDeployer {
+                    repository(url: "file:E:\\DemoPrj\\Services") {
+                    }
+                    snapshotRepository(url: "file:E:\\DemoPrj\\Services") {
+                    }
+                }
+            }
+
+            uploadServiceArtifacts.dependsOn(build)
+        }
+    }
+
+    startScripts {
+        classpath = files( '$APP_HOME/lib/*' )
+    }
+}
+
+// Individual sub projects configuration file.
+apply from: "gradle/subprojects.gradle"

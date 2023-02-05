@@ -1,0 +1,33 @@
+ext {
+    libraries = [:]
+}
+
+def springBootVersion = '2.4.1'
+def springBootValidationVer = '2.4.1'
+def slf4jVersion = '1.7.30'
+def lombokVersion= '1.18.16'
+def guavaVersion = '30.1-jre'
+def apacheCommonLangVer = '3.11'
+
+// Add external spring boot dependencies here
+libraries.springBootDependencies = "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
+
+libraries.springBootStarterWeb = dependencies.create("org.springframework.boot:spring-boot-starter-web") {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+libraries.springBootStarterWebSocket = dependencies.create("org.springframework.boot:spring-boot-starter-websocket") {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+libraries.springBootValidation = dependencies.create("org.springframework.boot:spring-boot-starter-validation:$springBootValidationVer") {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+libraries.springBootSecurity = dependencies.create("org.springframework.boot:spring-boot-starter-security:$springBootValidationVer") {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+libraries.springLog4j2 = "org.springframework.boot:spring-boot-starter-log4j2"
+
+// Add external dependencies here
+libraries.slf4j = "org.slf4j:slf4j-api:$slf4jVersion"
+libraries.lombok = "org.projectlombok:lombok:$lombokVersion"
+libraries.guava = "com.google.guava:guava:$guavaVersion"
+libraries.apacheCommonLang = "org.apache.commons:commons-lang3:$apacheCommonLangVer"

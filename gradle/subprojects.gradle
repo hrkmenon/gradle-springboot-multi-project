@@ -1,0 +1,60 @@
+/**
+ * Gradle configuration for individual modules.
+ */
+
+apply from: "gradle/dependencies.gradle"
+
+project(':utils') {
+
+    apply plugin: "io.spring.dependency-management"
+
+    dependencies {
+        implementation libraries.lombok
+        implementation libraries.guava
+        implementation libraries.apacheCommonLang
+        implementation libraries.springBootStarterWeb
+        implementation libraries.springBootValidation
+        implementation libraries.springLog4j2
+        implementation libraries.springBootSecurity
+
+        annotationProcessor libraries.lombok
+    }
+
+    dependencyManagement {
+        imports { mavenBom libraries.springBootDependencies }
+    }
+
+}
+
+project(':services:subprj1') {
+
+    apply plugin: "io.spring.dependency-management"
+
+    dependencies {
+        implementation project(':utils')
+
+        annotationProcessor libraries.lombok
+    }
+
+    dependencyManagement {
+        imports { mavenBom libraries.springBootDependencies }
+    }
+
+}
+
+project(':services:subprj2') {
+
+    apply plugin: "io.spring.dependency-management"
+
+    dependencies {
+        implementation project(':utils')
+        implementation libraries.springBootStarterWebSocket
+
+        annotationProcessor libraries.lombok
+    }
+
+    dependencyManagement {
+        imports { mavenBom libraries.springBootDependencies }
+    }
+
+}

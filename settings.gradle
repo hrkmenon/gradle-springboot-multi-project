@@ -1,0 +1,5 @@
+rootProject.name = 'DemoPrj'
+
+include 'utils'
+include ':services:subprj1'
+include ':services:subprj2'
